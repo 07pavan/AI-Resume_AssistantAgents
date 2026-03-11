@@ -15,23 +15,24 @@ openrouter_llm = LLM(
 
 resume_analyzer = Agent(
     role="Resume Analyzer",
-    goal="Analyze the resume and provide feedback",
-    backstory="Expert HR reviewer",
+    goal="Analyze resumes and provide feedback",
+    backstory="An experienced HR professional reviewing resumes.",
     llm=groq_llm,
     verbose=True
 )
 
 resume_improver = Agent(
     role="Resume Writer",
-    goal="Rewrite the resume professionally",
-    backstory="Professional resume editor",
+    goal="Improve resumes to be professional and ATS friendly",
+    backstory="A professional resume writer helping candidates improve resumes.",
     llm=openrouter_llm,
     verbose=True
 )
 
 job_researcher = Agent(
     role="Job Researcher",
-    goal="Find relevant jobs",
+    goal="Find relevant job opportunities",
+    backstory="An expert recruiter who searches job listings for suitable roles.",
     tools=[search_tool],
     llm=groq_llm,
     verbose=True
@@ -39,7 +40,8 @@ job_researcher = Agent(
 
 cover_letter_agent = Agent(
     role="Cover Letter Writer",
-    goal="Generate professional cover letters",
+    goal="Write a professional cover letter",
+    backstory="A career consultant who writes strong cover letters.",
     llm=openrouter_llm,
     verbose=True
 )

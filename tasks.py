@@ -1,45 +1,35 @@
-from crewai import Agent, LLM
-from crewai_tools import SerperDevTool
+from crewai import Task
+from agents import *
 
-search_tool = SerperDevTool()
+def create_tasks(resume_text):
 
-groq_llm = LLM(
-    model="groq/llama-3.1-8b-instant",
-    temperature=0.2,
-)
+    analyze_resume_task = Task(
+        description=f"Analyze this resume:\n{resume_text}",
+        expected_output="Detailed resume analysis",
+        agent=resume_analyzer
+    )
 
-openrouter_llm = LLM(
-    model="openrouter/meta-llama/llama-3.1-8b-instruct",
-    temperature=0.3
-)
+    improve_resume_task = Task(
+        description=f"Improve this resume:\n{resume_text}",
+        expected_output="Improved professional resume",
+        agent=resume_improver
+    )
 
-resume_analyzer = Agent(
-    role="Resume Analyzer",
-    goal="Analyze the resume and provide feedback",
-    backstory="Expert HR reviewer",
-    llm=groq_llm,
-    verbose=True
-)
+    job_search_task = Task(
+        description="Find 5 relevant jobs for the candidate",
+        expected_output="List of relevant job roles",
+        agent=job_researcher
+    )
 
-resume_improver = Agent(
-    role="Resume Writer",
-    goal="Rewrite the resume professionally",
-    backstory="Professional resume editor",
-    llm=openrouter_llm,
-    verbose=True
-)
+    cover_letter_task = Task(
+        description="Generate a professional cover letter",
+        expected_output="A strong cover letter",
+        agent=cover_letter_agent
+    )
 
-job_researcher = Agent(
-    role="Job Researcher",
-    goal="Find relevant jobs",
-    tools=[search_tool],
-    llm=groq_llm,
-    verbose=True
-)
-
-cover_letter_agent = Agent(
-    role="Cover Letter Writer",
-    goal="Generate professional cover letters",
-    llm=openrouter_llm,
-    verbose=True
-)
+    return [
+        analyze_resume_task,
+        improve_resume_task,
+        job_search_task,
+        cover_letter_task
+    ]
