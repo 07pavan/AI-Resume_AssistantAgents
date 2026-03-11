@@ -1,0 +1,8 @@
+crewai
+crewai-tools
+litellm
+openrouter
+streamlit
+pypdf
+python-docx
+python-dotenv
