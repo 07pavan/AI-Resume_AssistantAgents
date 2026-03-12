@@ -6,11 +6,13 @@ search_tool = SerperDevTool()
 groq_llm = LLM(
     model="groq/llama-3.1-8b-instant",
     temperature=0.2,
+    max_tokens=800
 )
 
 openrouter_llm = LLM(
     model="openrouter/meta-llama/llama-3.1-8b-instruct",
-    temperature=0.3
+    temperature=0.3,
+    max_tokens=800
 )
 
 resume_analyzer = Agent(
