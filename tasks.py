@@ -1,35 +1,44 @@
 from crewai import Task
 from agents import *
 
-def create_tasks(resume_text):
+def create_tasks(resume_text, options):
 
-    analyze_resume_task = Task(
-        description=f"Analyze this resume:\n{resume_text}",
-        expected_output="Detailed resume analysis",
-        agent=resume_analyzer
-    )
+    tasks = []
 
-    improve_resume_task = Task(
-        description=f"Improve this resume:\n{resume_text}",
-        expected_output="Improved professional resume",
-        agent=resume_improver
-    )
+    if "analysis" in options:
+        tasks.append(
+            Task(
+                description=f"Analyze this resume:\n{resume_text}",
+                expected_output="Detailed resume feedback",
+                agent=resume_analyzer
+            )
+        )
 
-    job_search_task = Task(
-        description="Find 5 relevant jobs for the candidate",
-        expected_output="List of relevant job roles",
-        agent=job_researcher
-    )
+    if "improve" in options:
+        tasks.append(
+            Task(
+                description=f"Improve this resume:\n{resume_text}",
+                expected_output="Improved professional resume",
+                agent=resume_improver
+            )
+        )
 
-    cover_letter_task = Task(
-        description="Generate a professional cover letter",
-        expected_output="A strong cover letter",
-        agent=cover_letter_agent
-    )
+    if "jobs" in options:
+        tasks.append(
+            Task(
+                description="Find 5 relevant jobs for this candidate",
+                expected_output="List of jobs",
+                agent=job_researcher
+            )
+        )
 
-    return [
-        analyze_resume_task,
-        improve_resume_task,
-        job_search_task,
-        cover_letter_task
-    ]
+    if "cover_letter" in options:
+        tasks.append(
+            Task(
+                description="Write a professional cover letter",
+                expected_output="A strong cover letter",
+                agent=cover_letter_agent
+            )
+        )
+
+    return tasks
