@@ -6,6 +6,25 @@ st.title("AI Resume Assistant")
 
 uploaded_file = st.file_uploader("Upload Resume", type=["pdf","docx"])
 
+analysis = st.checkbox("Resume Analysis")
+improve = st.checkbox("Improve Resume")
+jobs = st.checkbox("Job Suggestions")
+cover_letter = st.checkbox("Generate Cover Letter")
+
+options = []
+
+if analysis:
+    options.append("analysis")
+
+if improve:
+    options.append("improve")
+
+if jobs:
+    options.append("jobs")
+
+if cover_letter:
+    options.append("cover_letter")
+
 if uploaded_file:
 
     file_path = uploaded_file.name
@@ -15,10 +34,10 @@ if uploaded_file:
 
     resume_text = read_resume(file_path)
 
-    if st.button("Analyze Resume"):
+    if st.button("Run Selected AI Agents"):
 
-        with st.spinner("AI Agents are working..."):
+        with st.spinner("Running AI agents..."):
 
-            result = run_resume_assistant(resume_text)
+            result = run_resume_assistant(resume_text, options)
 
         st.write(result)
