@@ -1,6 +1,9 @@
 import streamlit as st
-from crew import run_resume_assistant
 from utils import read_resume
+from resume_parser import parse_resume_llm
+from crew import run_resume_assistant
+
+st.set_page_config(page_title="AI Resume Assistant", layout="wide")
 
 st.title("AI Resume Assistant")
 
@@ -29,15 +32,21 @@ if uploaded_file:
 
     file_path = uploaded_file.name
 
-    with open(file_path, "wb") as f:
+    with open(file_path,"wb") as f:
         f.write(uploaded_file.getbuffer())
 
     resume_text = read_resume(file_path)
 
-    if st.button("Run Selected AI Agents"):
+    st.info("Parsing resume...")
+
+    parsed_resume = parse_resume_llm(resume_text)
+
+    if st.button("Run AI Assistant"):
 
         with st.spinner("Running AI agents..."):
 
-            result = run_resume_assistant(resume_text, options)
+            result = run_resume_assistant(parsed_resume, options)
+
+        st.success("Completed")
 
         st.write(result)

@@ -1,22 +1,31 @@
-def run_resume_assistant(resume_text, options):
+from crewai import Crew
+from tasks import create_tasks
+from agents import *
 
-    try:
-        tasks = create_tasks(resume_text, options)
+def run_resume_assistant(parsed_resume, options):
 
-        crew = Crew(
-            agents=[
-                resume_analyzer,
-                resume_improver,
-                job_researcher,
-                cover_letter_agent
-            ],
-            tasks=tasks,
-            verbose=False
-        )
+    tasks = create_tasks(parsed_resume, options)
 
-        result = crew.kickoff()
+    selected_agents = []
 
-        return result
+    if "analysis" in options:
+        selected_agents.append(resume_analyzer)
 
-    except Exception as e:
-        return f"Error occurred: {str(e)}"
+    if "improve" in options:
+        selected_agents.append(resume_improver)
+
+    if "jobs" in options:
+        selected_agents.append(job_researcher)
+
+    if "cover_letter" in options:
+        selected_agents.append(cover_letter_agent)
+
+    crew = Crew(
+        agents=selected_agents,
+        tasks=tasks,
+        verbose=False
+    )
+
+    result = crew.kickoff()
+
+    return result
