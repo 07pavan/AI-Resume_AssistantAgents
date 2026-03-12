@@ -2,9 +2,9 @@ from crewai import Crew
 from agents import *
 from tasks import create_tasks
 
-def run_resume_assistant(resume_text):
+def run_resume_assistant(resume_text, options):
 
-    tasks = create_tasks(resume_text)
+    tasks = create_tasks(resume_text, options)
 
     crew = Crew(
         agents=[
