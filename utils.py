@@ -1,20 +1,21 @@
 from pypdf import PdfReader
 import docx
 
+MAX_CHARS = 3000   # prevents huge prompts
+
 def read_resume(file_path):
+
+    text = ""
 
     if file_path.endswith(".pdf"):
         reader = PdfReader(file_path)
-        text = ""
-
         for page in reader.pages:
             text += page.extract_text()
 
-        return text
-
     elif file_path.endswith(".docx"):
-
         doc = docx.Document(file_path)
-        text = "\n".join([para.text for para in doc.paragraphs])
+        for para in doc.paragraphs:
+            text += para.text + "\n"
 
-        return text
+    # limit text size
+    return text[:MAX_CHARS]
