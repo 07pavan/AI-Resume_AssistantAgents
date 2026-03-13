@@ -1,52 +1,67 @@
 import streamlit as st
-from utils import read_resume
-from resume_parser import parse_resume_llm
-from crew import run_resume_assistant
 
-st.set_page_config(page_title="AI Resume Assistant", layout="wide")
+from parser.resume_parser import extract_resume_text
+from pipeline.analyzer import analyze_resume
+from pipeline.improver import improve_resume
+from pipeline.jobs import suggest_jobs
+from pipeline.cover_letter import generate_cover_letter
 
-st.title("AI Resume Assistant")
+st.title("🤖 AI Resume Assistant")
 
-uploaded_file = st.file_uploader("Upload Resume", type=["pdf","docx"])
+uploaded_file = st.file_uploader("Upload Resume", type=["pdf", "docx"])
 
-analysis = st.checkbox("Resume Analysis")
-improve = st.checkbox("Improve Resume")
-jobs = st.checkbox("Job Suggestions")
-cover_letter = st.checkbox("Generate Cover Letter")
+analysis_option = st.checkbox("Resume Analysis")
+improve_option = st.checkbox("Improve Resume")
+job_option = st.checkbox("Job Suggestions")
+cover_option = st.checkbox("Generate Cover Letter")
 
-options = []
-
-if analysis:
-    options.append("analysis")
-
-if improve:
-    options.append("improve")
-
-if jobs:
-    options.append("jobs")
-
-if cover_letter:
-    options.append("cover_letter")
+job_role = st.text_input("Target Job Role (for cover letter)")
 
 if uploaded_file:
 
-    file_path = uploaded_file.name
+    try:
+        resume_text = extract_resume_text(uploaded_file)
 
-    with open(file_path,"wb") as f:
-        f.write(uploaded_file.getbuffer())
+        st.success("Resume uploaded successfully!")
 
-    resume_text = read_resume(file_path)
+    except Exception as e:
+        st.error(f"Error reading resume: {e}")
 
-    st.info("Parsing resume...")
+if st.button("Run AI Assistant"):
 
-    parsed_resume = parse_resume_llm(resume_text)
+    if not uploaded_file:
+        st.warning("Please upload a resume first.")
+        st.stop()
 
-    if st.button("Run AI Assistant"):
+    try:
 
-        with st.spinner("Running AI agents..."):
+        analysis = None
+        improved = None
 
-            result = run_resume_assistant(parsed_resume, options)
+        if analysis_option:
 
-        st.success("Completed")
+            st.subheader("Resume Analysis")
+            analysis = analyze_resume(resume_text)
+            st.write(analysis)
 
-        st.write(result)
+        if improve_option:
+
+            st.subheader("Improved Resume")
+            improved = improve_resume(resume_text, analysis)
+            st.write(improved)
+
+        if job_option:
+
+            st.subheader("Job Suggestions")
+            jobs = suggest_jobs(resume_text)
+            st.write(jobs)
+
+        if cover_option:
+
+            st.subheader("Cover Letter")
+            cover = generate_cover_letter(improved or resume_text, job_role)
+            st.write(cover)
+
+    except Exception as e:
+
+        st.error(f"Pipeline error: {e}")
