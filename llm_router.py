@@ -1,35 +1,44 @@
-#This file will manage which LLM is used and fallback handling.
 from crewai import LLM
 
-# Primary models
 groq_llm = LLM(
     model="groq/llama-3.1-8b-instant",
-    temperature=0.2,
-    max_tokens=600
+    temperature=0.2
+)
+
+deepseek_llm = LLM(
+    model="deepseek/deepseek-chat",
+    temperature=0.3
 )
 
 openrouter_llm = LLM(
-    model="openrouter/meta-llama/llama-3.1-8b-instruct",
-    temperature=0.3,
-    max_tokens=800
+    model="openrouter/meta-llama/llama-3.1-8b-instruct"
 )
 
-def get_llm(task_type):
+together_llm = LLM(
+    model="together/mistralai/Mixtral-8x7B-Instruct-v0.1"
+)
 
-    if task_type == "analysis":
-        return safe_llm_call(groq_llm, openrouter_llm)
+hf_llm = LLM(
+    model="huggingface/mistralai/Mistral-7B-Instruct-v0.2"
+)
 
-    if task_type == "improve":
-        return safe_llm_call(openrouter_llm, groq_llm)
 
-    if task_type == "jobs":
-        return safe_llm_call(groq_llm, openrouter_llm)
+def get_llm(agent_name):
 
-    if task_type == "cover_letter":
-        return safe_llm_call(openrouter_llm, groq_llm)
+    if agent_name == "parser":
+        return groq_llm
 
-def safe_llm_call(primary, fallback):
-    try:
-        return primary
-    except:
-        return fallback
+    elif agent_name == "analyzer":
+        return deepseek_llm
+
+    elif agent_name == "improver":
+        return openrouter_llm
+
+    elif agent_name == "job":
+        return together_llm
+
+    elif agent_name == "cover":
+        return hf_llm
+
+    else:
+        raise ValueError(f"Unknown agent: {agent_name}")
