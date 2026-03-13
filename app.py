@@ -8,6 +8,7 @@ from pipeline.improver import improve_resume
 from pipeline.jobs import suggest_jobs
 from pipeline.cover_letter import generate_cover_letter
 from pipeline.ats_score import calculate_ats_score
+from pipeline.job_matcher import match_resume_to_job
 
 
 st.set_page_config(page_title="AI Resume Assistant", page_icon="🤖")
@@ -15,9 +16,9 @@ st.set_page_config(page_title="AI Resume Assistant", page_icon="🤖")
 st.title("🤖 AI Resume Assistant")
 st.write("Upload your resume and get AI-powered feedback, improvements, job suggestions, and more.")
 
-# -------------------------------
+# -------------------------------------------------
 # CACHED FUNCTIONS (reduce API usage)
-# -------------------------------
+# -------------------------------------------------
 
 @st.cache_data
 def cached_analysis(text):
@@ -34,14 +35,19 @@ def cached_ats(text):
     return calculate_ats_score(text)
 
 
+@st.cache_data
+def cached_match(text, role):
+    return match_resume_to_job(text, role)
+
+
 @st.cache_data(ttl=600)
 def cached_jobs(role):
     return suggest_jobs(role)
 
 
-# -------------------------------
+# -------------------------------------------------
 # Upload Resume
-# -------------------------------
+# -------------------------------------------------
 
 uploaded_file = st.file_uploader("Upload Resume", type=["pdf", "docx"])
 
@@ -51,13 +57,17 @@ st.subheader("Select Features")
 analysis_option = st.checkbox("Resume Analysis")
 improve_option = st.checkbox("Improve Resume")
 ats_option = st.checkbox("ATS Resume Score")
+match_option = st.checkbox("Resume ↔ Job Match Score")
 job_option = st.checkbox("Job Suggestions")
 cover_option = st.checkbox("Generate Cover Letter")
 
 job_query = st.text_input("Job search role", "AI Engineer")
-job_role = st.text_input("Target Job Role (for cover letter)", "AI Engineer")
+job_role = st.text_input("Target Job Role (for cover letter / match)", "AI Engineer")
 
-# Extract resume text
+# -------------------------------------------------
+# Extract Resume Text
+# -------------------------------------------------
+
 resume_text = None
 
 if uploaded_file:
@@ -70,9 +80,9 @@ if uploaded_file:
         st.error(f"Error reading resume: {e}")
 
 
-# -------------------------------
+# -------------------------------------------------
 # Run Pipeline
-# -------------------------------
+# -------------------------------------------------
 
 if st.button("Run AI Assistant"):
 
@@ -85,9 +95,9 @@ if st.button("Run AI Assistant"):
         analysis = None
         improved = None
 
-        # -------------------------------
+        # -------------------------------------------------
         # ATS SCORE
-        # -------------------------------
+        # -------------------------------------------------
 
         if ats_option:
 
@@ -97,9 +107,9 @@ if st.button("Run AI Assistant"):
 
             st.write(ats_score)
 
-        # -------------------------------
+        # -------------------------------------------------
         # RESUME ANALYSIS
-        # -------------------------------
+        # -------------------------------------------------
 
         if analysis_option:
 
@@ -109,9 +119,9 @@ if st.button("Run AI Assistant"):
 
             st.write(analysis)
 
-        # -------------------------------
+        # -------------------------------------------------
         # RESUME IMPROVEMENT
-        # -------------------------------
+        # -------------------------------------------------
 
         if improve_option:
 
@@ -138,9 +148,21 @@ if st.button("Run AI Assistant"):
             except Exception as e:
                 st.error(f"PDF generation failed: {e}")
 
-        # -------------------------------
+        # -------------------------------------------------
+        # RESUME ↔ JOB MATCH SCORE
+        # -------------------------------------------------
+
+        if match_option:
+
+            st.subheader("🎯 Resume ↔ Job Match Score")
+
+            match_result = cached_match(resume_text, job_role)
+
+            st.write(match_result)
+
+        # -------------------------------------------------
         # JOB SUGGESTIONS
-        # -------------------------------
+        # -------------------------------------------------
 
         if job_option:
 
@@ -165,9 +187,9 @@ if st.button("Run AI Assistant"):
 
                 st.warning(jobs)
 
-        # -------------------------------
+        # -------------------------------------------------
         # COVER LETTER
-        # -------------------------------
+        # -------------------------------------------------
 
         if cover_option:
 
