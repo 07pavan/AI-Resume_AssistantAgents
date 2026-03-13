@@ -15,7 +15,34 @@ st.set_page_config(page_title="AI Resume Assistant", page_icon="🤖")
 st.title("🤖 AI Resume Assistant")
 st.write("Upload your resume and get AI-powered feedback, improvements, job suggestions, and more.")
 
-# Upload resume
+# -------------------------------
+# CACHED FUNCTIONS (reduce API usage)
+# -------------------------------
+
+@st.cache_data
+def cached_analysis(text):
+    return analyze_resume(text)
+
+
+@st.cache_data
+def cached_improvement(text, analysis):
+    return improve_resume(text, analysis)
+
+
+@st.cache_data
+def cached_ats(text):
+    return calculate_ats_score(text)
+
+
+@st.cache_data(ttl=600)
+def cached_jobs(role):
+    return suggest_jobs(role)
+
+
+# -------------------------------
+# Upload Resume
+# -------------------------------
+
 uploaded_file = st.file_uploader("Upload Resume", type=["pdf", "docx"])
 
 # Feature selection
@@ -43,7 +70,10 @@ if uploaded_file:
         st.error(f"Error reading resume: {e}")
 
 
-# Run pipeline
+# -------------------------------
+# Run Pipeline
+# -------------------------------
+
 if st.button("Run AI Assistant"):
 
     if not uploaded_file:
@@ -55,30 +85,39 @@ if st.button("Run AI Assistant"):
         analysis = None
         improved = None
 
+        # -------------------------------
         # ATS SCORE
+        # -------------------------------
+
         if ats_option:
 
             st.subheader("📊 ATS Resume Score")
 
-            ats_score = calculate_ats_score(resume_text)
+            ats_score = cached_ats(resume_text)
 
             st.write(ats_score)
 
+        # -------------------------------
         # RESUME ANALYSIS
+        # -------------------------------
+
         if analysis_option:
 
             st.subheader("🔍 Resume Analysis")
 
-            analysis = analyze_resume(resume_text)
+            analysis = cached_analysis(resume_text)
 
             st.write(analysis)
 
+        # -------------------------------
         # RESUME IMPROVEMENT
+        # -------------------------------
+
         if improve_option:
 
             st.subheader("✨ Improved Resume")
 
-            improved = improve_resume(resume_text, analysis)
+            improved = cached_improvement(resume_text, analysis)
 
             st.write(improved)
 
@@ -99,12 +138,15 @@ if st.button("Run AI Assistant"):
             except Exception as e:
                 st.error(f"PDF generation failed: {e}")
 
+        # -------------------------------
         # JOB SUGGESTIONS
+        # -------------------------------
+
         if job_option:
 
             st.subheader("💼 Job Suggestions")
 
-            jobs = suggest_jobs(job_query)
+            jobs = cached_jobs(job_query)
 
             if isinstance(jobs, list):
 
@@ -114,15 +156,19 @@ if st.button("Run AI Assistant"):
                     st.write(f"🏢 Company: {job['company']}")
                     st.write(f"📍 Location: {job['location']}")
 
-                    # Clickable apply button
-                    st.link_button("🚀 Apply Now", job["link"])
+                    if job.get("link") and job["link"] != "#":
+                        st.link_button("🚀 Apply Now", job["link"])
 
                     st.divider()
 
             else:
-                st.write(jobs)
 
+                st.warning(jobs)
+
+        # -------------------------------
         # COVER LETTER
+        # -------------------------------
+
         if cover_option:
 
             st.subheader("✉️ Cover Letter")
@@ -133,4 +179,4 @@ if st.button("Run AI Assistant"):
 
     except Exception as e:
 
-        st.error(f"Pipeline error: {e}")
+        st.error(f"⚠️ Pipeline error: {e}")
